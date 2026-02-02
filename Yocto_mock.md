@@ -1,4 +1,4 @@
-# Yocto Project – Interview Questions & Answers
+# Yocto Project MOCK
 
 # Yocto Project vs Buildroot & Package Management
 
