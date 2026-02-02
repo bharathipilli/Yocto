@@ -255,7 +255,7 @@ rootfs partition → ext4
 
 > **`.wic` is a complete, bootable disk image with partitions, while `.ext4` is only a root filesystem and cannot boot by itself.**
 
-## 6. What are Layers in Yocto?
+# 6. What are Layers in Yocto?
 
 Definition:
 
@@ -270,7 +270,7 @@ OS features
 Applications
 separate and reusable
 
-Common Yocto Layers (Interview Must-Know)
+### Common Yocto Layers (Interview Must-Know)
 Layer	Purpose
 meta	Core Yocto recipes (base system)
 meta-poky	Poky distro configuration
@@ -278,7 +278,8 @@ meta-yocto-bsp	Reference BSPs
 meta-openembedded	Extra packages (networking, python, multimedia)
 meta-bsp-*	Board support (SoC-specific)
 meta-app (custom)	Your applications
-Layer Priority (Important)
+
+### Layer Priority (Important)
 
 Multiple layers may provide same recipe
 
@@ -292,7 +293,7 @@ bblayers.conf	Which layers are used
 local.conf	Build settings
 layer.conf	Layer-specific metadata
 How to Create a Custom Layer (Step-by-Step)
-Step 1: Go to Yocto Build Environment
+### Step 1: Go to Yocto Build Environment
 source oe-init-build-env
 
 
@@ -303,7 +304,7 @@ build/
 │   ├── bblayers.conf
 │   └── local.conf
 
-Step 2: Create a Custom Layer
+### Step 2: Create a Custom Layer
 bitbake-layers create-layer ../meta-myapp
 
 
@@ -316,7 +317,7 @@ meta-myapp/
 │   └── myapp/
 └── README
 
-Step 3: Add Layer to Yocto (bblayers.conf)
+### Step 3: Add Layer to Yocto (bblayers.conf)
 What is bblayers.conf?
 
 It tells BitBake which layers to include in the build.
@@ -339,7 +340,7 @@ BBLAYERS ?= " \
   /path/meta-myapp \
 "
 
- Now BitBake knows your layer exists
+ ### Now BitBake knows your layer exists
 
  Understanding layer.conf (Inside Custom Layer)
 
@@ -347,7 +348,7 @@ File:
 
 meta-myapp/conf/layer.conf
 
-Important Entries Explained
+### Important Entries Explained
 BBPATH .= ":${LAYERDIR}"
 
 BBFILES += "${LAYERDIR}/recipes-*/*/*.bb \
@@ -357,7 +358,7 @@ BBFILE_COLLECTIONS += "myapp"
 BBFILE_PATTERN_myapp = "^${LAYERDIR}/"
 BBFILE_PRIORITY_myapp = "6"
 
-What Each Does:
+### What Each Does:
 Line	Purpose
 BBPATH	Makes BitBake search this layer
 BBFILES	Where recipes are located
@@ -366,11 +367,11 @@ BBFILE_PRIORITY	Override priority
 
 ---
 
- What is local.conf?
+### What is local.conf?
 
 local.conf controls how the build is done, not what is built.
 
-Step 4: Configure Build Settings (local.conf)
+### Step 4: Configure Build Settings (local.conf)
 
 File:
 
@@ -381,7 +382,7 @@ Common & Important Settings
 MACHINE = "qemuarm"
 
 
-Defines hardware platform.
+### Defines hardware platform.
 
 Image Type
 IMAGE_FSTYPES = "wic"
@@ -407,11 +408,11 @@ deb
 
 ipk
 
- ## Parallel Build (Performance)
+ ### Parallel Build (Performance)
 BB_NUMBER_THREADS = "8"
 PARALLEL_MAKE = "-j8"
 
-## Full Flow Summary (Interview Gold ⭐)
+### Full Flow Summary (Interview Gold ⭐)
 1. source oe-init-build-env
 2. Create custom layer
 3. Add layer path to bblayers.conf
@@ -420,7 +421,7 @@ PARALLEL_MAKE = "-j8"
 6. Add recipes inside custom layer
 7. Build image using bitbake
 
-## 7. BitBake Overview (Yocto Project)
+# 7. BitBake Overview (Yocto Project)
 
 ##  What is BitBake?
 
@@ -429,13 +430,11 @@ PARALLEL_MAKE = "-j8"
 **BitBake** is the build engine of the **Yocto Project**.  
 It reads metadata (recipes, classes, and configurations) and executes tasks to build **packages, images, and SDKs**.
 
-### Simple Definition
-
 BitBake is like **`make`**, but smarter—it understands **dependencies, tasks, layers, and cross-compilation**.
 
 ---
 
-##  Why Do We Need BitBake?
+###  Why Do We Need BitBake?
 
 BitBake is responsible for:
 
@@ -511,7 +510,7 @@ do_install
 do_package
 do_rootfs 
 
-## BitBake produces:
+### BitBake produces:
 
 - Packages (`.rpm`, `.deb`, `.ipk`)
 - Root filesystem
@@ -528,41 +527,41 @@ do_rootfs
 > **BitBake is Yocto’s build engine that parses metadata, resolves dependencies, and executes tasks to generate packages, root filesystems, and images.**
 
 ---
-## 8.Why Yocto is Preferred in Production Systems
+# 8.Why Yocto is Preferred in Production Systems
 
 Yocto is preferred in production because it provides fully customizable, reproducible, and maintainable embedded Linux builds, which are essential for long-term support, multiple hardware platforms, and reliable software updates.
 
-# Reproducible Builds
+### Reproducible Builds
 
 Same source and configuration always produce identical images.
 
 Critical for QA and certification.
 
-# Customizable
+### Customizable
 
 Full control over kernel, rootfs, libraries, and applications.
 
 Enables tailored builds for specific hardware.
 
-# Long-Term Maintenance
+### Long-Term Maintenance
 
 Supports LTS releases like Kirkstone or Scarthgap.
 
 Ideal for products with a long lifecycle.
 
-# Scalable & Modular
+### Scalable & Modular
 
 Supports multiple images and product variants using layers.
 
 Layer system allows reuse and modular updates.
 
-# Package Management & OTA Updates
+### Package Management & OTA Updates
 
 Supports RPM, DEB, IPK for modular updates.
 
 Enables field updates without reflashing the entire system.
 
-# Industry Standard
+### Industry Standard
 
 Used in automotive, industrial automation, networking, and IoT.
 
