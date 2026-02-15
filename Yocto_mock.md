@@ -741,7 +741,410 @@ Inside:
 build/tmp/deploy/images/<machine>/
 
 Why Do We Use .wic Instead of .ext4?
-      .ext4	                      .wic
-Only root filesystem	   Full bootable disk image
-No partition layout	     Includes partitions
-Not directly bootable	   Directly flashable to SD
+
+.wic ->  Full bootable disk image , includes partitions,        directly flashable to SD 
+.ext4 ->  Only root filesystem,No partion layout,Not diresctly bootable
+
+## 🎯 Difference between .wic, .img, .ext4, .tar.bz2
+.wic → Full bootable SD card image
+
+.img → Raw disk image
+
+.ext4 → Only root filesystem
+
+.tar.bz2 → Compressed root filesystem archive
+
+## On what files bitbake work on ? 
+
+BitBake works on metadata files like .bb (recipes), .bbappend, .bbclass, and configuration files such as local.conf, bblayers.conf, and layer.conf.
+
+## what type of yocto image you generated? what you configure to build that image ?
+
+I generated core-image-minimal for Raspberry Pi.
+
+It is a small Linux image containing basic utilities required to boot the system
+
+I configured the MACHINE in local.conf to Raspberry Pi, added required layers in bblayers.conf, and included necessary packages using IMAGE_INSTALL if needed.
+
+## whih tool does yocto use ?
+Yocto uses BitBake as its build engine.
+
+## what are the issues we face while building yocto?
+
+Common issues include missing host dependencies, layer misconfiguration, wrong MACHINE selection, fetch errors, disk space problems, and sstate cache conflicts.
+
+## difference between yocto and openembedded
+
+Yocto → Complete project / ecosystem
+OpenEmbedded -> build framework that actually builds the software using recipes and metadata.
+
+## What is dependency resolution in Yocto?
+
+
+Dependency resolution ensures that required packages are built before dependent packages using DEPENDS and RDEPENDS variables.
+
+DEPENDS → Build-time dependency
+
+RDEPENDS → Runtime dependency
+
+## Difference between Depends and Rdepends
+
+### DEPENDS
+
+DEPENDS specifies build-time dependencies.
+It ensures required recipes are built before this recipe during compilation.
+
+📌 Affects build order.
+
+Example:
+
+DEPENDS = "openssl"
+
+(OpenSSL must be built before this recipe compiles.)
+
+### RDEPENDS
+
+RDEPENDS specifies runtime dependencies.
+It ensures required packages are installed in the final root filesystem.
+
+📌 Affects image content.
+
+Example:
+
+RDEPENDS:${PN} = "bash"
+
+(Bash will be included in the final image.)
+
+## what does bitbake actually does?
+
+Parse Metadata
+
+Reads .bb, .bbappend, .bbclass, and configuration files.
+
+ Resolve Dependencies
+
+Creates dependency graph and decides build order.
+
+## BITBAKE task execution pipeline
+
+do_fetch
+Downloads source code.
+
+ do_unpack
+Extracts source files.
+
+do_patch
+Applies patches to the source.
+
+do_configure
+Prepares build configuration.
+
+do_compile
+Cross-compiles the source for target.
+
+do_install
+Installs files into staging directory.
+
+do_package
+Creates installable packages.
+
+do_rootfs
+Assembles root filesystem.
+
+do_image
+Generates final bootable image (.wic / .img).
+
+## what is local.conf used for ?
+local.conf is used to configure build-specific settings like MACHINE type, image features, parallelism, and package selection for a Yocto build.
+
+## what happens when you run bitbake core image minimal
+When I run bitbake core-image-minimal, BitBake : 
+
+Step-wise : 
+
+1️⃣ Parses metadata
+2️⃣ Resolves dependencies
+3️⃣ Fetches and compiles packages
+4️⃣ Creates root filesystem
+5️⃣ Generates final image (.wic/.img)
+
+## which instructions present in recipe and extensions of recipe ?
+
+A recipe usually contains: in (.bb)
+
+DESCRIPTION → Information about the package
+
+LICENSE → License details
+
+SRC_URI → Source code location
+
+DEPENDS → Build-time dependencies
+
+RDEPENDS → Runtime dependencies
+
+inherit → Inherits a class
+
+Tasks like do_compile(), do_install()
+
+👉 A recipe defines how to build a package.
+
+### What is an Extension of a Recipe (.bbappend)?
+
+A .bbappend file is used to extend or modify an existing recipe without changing the original file.
+
+It can:
+
+Add patches
+
+Add extra files
+
+Modify variables
+
+Add dependencies
+
+## what is src_url and where it is used ?
+
+SRC_URI is a variable used in a Yocto recipe (.bb file) to specify the location of the source code, patches, or files required to build the package.
+
+📌 Where is it used?
+
+It is used inside recipe files (.bb and .bbappend).
+
+## What is a Class in Yocto?
+
+A class in Yocto is a reusable build logic file that provides common functions and tasks which multiple recipes can inherit.
+
+🎯 What is its corresponding file?
+
+A class is defined in a .bbclass file.
+
+### What does a .bbclass file contain?
+
+It contains:
+
+Common task implementations (like do_configure, do_compile)
+
+Shared functions
+
+Default variable definitions
+
+Reusable build behavior
+## What is BSP?
+
+BSP (Board Support Package) is a collection of configuration files and metadata that enables Yocto to support a specific hardware board.
+
+## What is meta-yocto-bsp?
+
+meta-yocto-bsp is a Board Support Package (BSP) layer in Poky that provides machine configurations and hardware support for reference development boards.
+
+🎯 What does it contain?
+
+It contains:
+
+Machine configuration files
+
+Kernel settings
+
+Bootloader configuration
+
+Hardware-specific metadata
+
+## What is SSTATE Cache?
+
+SSTATE (Shared State) cache is a mechanism in Yocto that stores the output of completed build tasks so they can be reused in future builds without rebuilding.
+
+📌 Why is it used?
+
+It reduces build time by avoiding rebuilding unchanged components.
+
+📌 Where is it stored?
+build/sstate-cache/
+
+## How to Add a Custom Layer in Yocto?
+✅ Step 1: Create a new layer
+bitbake-layers create-layer meta-custom
+
+✅ Step 2: Add the layer to bblayers.conf
+bitbake-layers add-layer ../meta-custom
+
+
+(Or manually add the path inside conf/bblayers.conf)
+
+✅ Step 3: Add recipes inside the layer
+
+Create recipes under:
+
+meta-custom/recipes-<category>/<recipe-name>/
+
+### Inside poky we will create a custom layer
+yocto-project/
+│
+├── poky/
+├── meta-raspberrypi/
+├── meta-custom/   ← (created here)
+└── build/
+
+## what are the other type of images we can build in yocto other than core minimal image ?
+
+1️⃣ core-image-full-cmdline
+
+Minimal image + command-line tools and debugging utilities.
+
+2️⃣ core-image-base
+
+Basic console image with standard packages.
+
+3️⃣ core-image-sato
+
+Image with Sato graphical desktop (GUI).
+
+4️⃣ core-image-weston
+
+Wayland/Weston graphical image.
+
+5️⃣ Custom Image
+
+You can create your own image recipe and define required packages.
+
+## Which directory stores data between builds?
+
+The sstate-cache/ directory stores shared state cache data between builds.
+
+It allows reuse of previously built task outputs.
+
+## What is a Package in Yocto?
+
+A package is the compiled output of a recipe that contains binaries, libraries, or files which can be installed into the target root filesystem.
+
+Recipe → Builds software
+
+Package → Output files produced by that recipe
+
+Example:
+A recipe may generate:
+
+package
+package-dev
+package-dbg
+
+## What is a Package Manager?
+
+A package manager is a tool that installs, removes, and manages software packages in the target root filesystem.
+
+Yocto supports RPM (.rpm), DEB (.deb), and IPK (.ipk) formats.
+
+### How It Is Selected?
+
+It is configured in local.conf:
+
+PACKAGE_CLASSES = "package_rpm"
+
+or
+
+PACKAGE_CLASSES = "package_deb"
+
+or
+
+PACKAGE_CLASSES = "package_ipk"
+
+## What is a Layer in Yocto?
+
+A layer is a collection of related metadata (recipes, classes, configurations) used to organize and manage the build system.
+
+📌 Why Layers Are Used?
+
+To separate functionality
+
+To add features without modifying core files
+
+To keep hardware, distro, and application metadata modular
+
+📌 What Does a Layer Contain?
+
+Recipes (.bb)
+
+Recipe extensions (.bbappend)
+
+Classes (.bbclass)
+
+Configuration files (conf/)
+
+## What does source oe-init-build-env do?
+
+It initializes the Yocto build environment and creates the build/ directory with required configuration files.
+
+## yocto is builded successfully but not flashing why ?
+
+if Yocto builds successfully, flashing may fail due to wrong image file, incorrect MACHINE configuration, improper SD card flashing, or hardware issues.
+
+## What is OpenEmbedded?
+
+OpenEmbedded is a build framework that provides the core metadata, classes, and tools used to build custom Linux distributions for embedded systems.
+
+It contains recipes, classes, and configuration files.
+
+It uses BitBake as the build engine.
+
+It is the foundation on which Yocto Project is built.
+
+## What does the Poky directory contain?
+
+Poky is the reference distribution of the Yocto Project and contains the build system and core layers required to build images.
+
+📌 Poky directory mainly contains:
+
+1️⃣ bitbake/ → BitBake build engine
+2️⃣ meta/ → OpenEmbedded-Core layer
+3️⃣ meta-poky/ → Poky distribution configuration
+4️⃣ meta-yocto-bsp/ → Reference BSP layer
+5️⃣ oe-init-build-env → Script to initialize build environment
+
+## what is difference between .bbfile and .conf file 
+
+| .bb (Recipe)     | .conf (Configuration)   |
+| ---------------- | ----------------------- |
+| Builds software  | Configures build system |
+| Contains tasks   | Contains variables      |
+| Defines packages | Defines global settings |
+
+1️⃣ .bb File (Recipe File)
+
+A .bb file is a recipe that defines how to build a specific software package.
+
+It contains:
+
+SRC_URI → Source location
+
+LICENSE
+
+DEPENDS
+
+Tasks like do_compile, do_install
+
+Package details
+
+👉 It builds one software component.
+
+2️⃣ .conf File (Configuration File)
+
+A .conf file is used to configure the build system behavior.
+
+It does NOT build software.
+
+Important .conf Files:
+📌 local.conf
+
+Sets MACHINE
+
+Sets PACKAGE_CLASSES
+
+Sets image features
+
+User-specific build settings
+
+📌 bblayers.conf
+
+Lists all active layers
+
+Tells BitBake where metadata exists
+
